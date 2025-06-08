@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PowerFit Gym - Gestión de Máquinas</title>
+    <style>
+        :root {
+            --primary: #190285; /* Azul oscuro del logo */
+            --secondary: #FEFEFE; /* Blanco del logo */
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--dark);
+            -webkit-text-size-adjust: 100%; /* Evita zoom automático en iOS */
+        }
+        
+        /* Mejoras específicas para touch */
+        select, input, button, .btn {
+            min-height: 44px; /* Tamaño mínimo recomendado para touch */
+            font-size: 16px; /* Tamaño de fuente legible */
+            touch-action: manipulation; /* Mejora la respuesta táctil */
+        }
+        
+        button, .btn {
+            -webkit-tap-highlight-color: transparent; /* Elimina el resaltado azul en iOS */
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px; /* Mayor área de contacto */
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-svg {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 1.5rem;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 8px 12px; /* Mayor área de contacto */
+            display: inline-block;
+        }
+        
+        nav ul li a:hover {
+            color: #d4d4d4;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .machine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .machine-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem; /* Más padding para móviles */
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            background-color: white;
+        }
+        
+        .machine-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .machine-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem; /* Tamaño de fuente más grande */
+        }
+        
+        .machine-card p {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .machine-card .price {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.5rem 0.75rem; /* Más grande para móviles */
+            border-radius: 4px;
+            font-size: 0.9rem; /* Tamaño de fuente más grande */
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        
+        .available {
+            background-color: #e6f7ff;
+            color: #0056b3;
+            border: 1px solid #b3d7ff;
+        }
+        
+        .occupied {
+            background-color: #fff2f2;
+            color: #dc3545;
+            border: 1px solid #ffb3b3;
+        }
+        
+        .timer {
+            background-color: var(--warning);
+            color: var(--dark);
+            padding: 0.5rem 0.75rem; /* Más grande para móviles */
+            border-radius: 4px;
+            font-size: 0.9rem; /* Tamaño de fuente más grande */
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px; /* Más grande para móviles */
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            width: 100%; /* Ocupa todo el ancho en móviles */
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: #14006b;
+        }
+        
+        .btn-reserve {
+            background-color: var(--success);
+        }
+        
+        .btn-reserve:hover {
+            background-color: #218838;
+        }
+        
+        .btn-release {
+            background-color: var(--danger);
+        }
+        
+        .btn-release:hover {
+            background-color: #c82333;
+        }
+        
+        .calculator {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin-top: 1rem;
+        }
+        
+        .calculator input, .calculator select {
+            padding: 12px 15px; /* Más grande para móviles */
+            margin-bottom: 1rem; /* Más espacio */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .calculator button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px; /* Más grande para móviles */
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .calculator button:hover {
+            background-color: #14006b;
+        }
+        
+        .result {
+            margin-top: 1rem;
+            font-weight: bold;
+            padding: 1rem; /* Más grande para móviles */
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.9rem; /* Tamaño ajustado para móviles */
+        }
+        
+        .history-table th, .history-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .history-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .history-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .routine-card {
+            margin-bottom: 1.5rem; /* Más espacio */
+            padding: 1.5rem; /* Más grande para móviles */
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+        }
+        
+        .routine-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.75rem; /* Más espacio */
+            font-size: 1.2rem; /* Tamaño de fuente más grande */
+        }
+        
+        .routine-card ul {
+            margin-left: 1.5rem;
+        }
+        
+        .routine-card ul li {
+            margin-bottom: 0.5rem; /* Más espacio */
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            max-width: 80%; /* Ajuste para móviles */
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        /* Estilo para la sección del QR */
+        .qr-section {
+            text-align: center;
+            padding: 25px 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 30px;
+        }
+        
+        .qr-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+            margin: 0 auto;
+        }
+        
+        .qr-description {
+            margin-top: 10px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 1rem; /* Tamaño de fuente más grande */
+        }
+        
+        /* Estilos específicos para móviles */
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo-container {
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0.5rem;
+            }
+            
+            .machine-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 0 0.5rem;
+                margin: 1rem auto;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .history-table {
+                font-size: 0.8rem;
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .calculator {
+                max-width: 100%;
+            }
+            
+            .qr-section {
+                padding: 20px 15px;
+            }
+            
+            .qr-code {
+                width: 150px;
+                height: 150px;
+            }
+            
+            /* Ajustes para selects en iOS */
+            select {
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 1em;
+            }
+        }
+        
+        /* Corrección específica para Safari */
+        @supports (-webkit-touch-callout: none) {
+            select {
+                padding-right: 30px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+    
+    <header>
+        <div class="logo-container">
+            <!-- Logo SVG que proporcionaste -->
+            <svg class="logo-svg" viewBox="0 0 481 472" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 0 C158.73 0 317.46 0 481 0 C481 155.76 481 311.52 481 472 C322.27 472 163.54 472 0 472 C0 316.24 0 160.48 0 0 Z " fill="#FEFEFE"/>
+                <path d="M0 0 C9.57152878 -0.06806886 19.14289394 -0.12298401 28.71461105 -0.15543652 C33.16025616 -0.17102054 37.60572553 -0.19212424 42.05126953 -0.22631836 C46.35013785 -0.25917329 50.64883828 -0.27690747 54.94782257 -0.28463173 C56.57909026 -0.29012875 58.21034988 -0.30086155 59.8415451 -0.31719017 C77.89341367 -0.49052887 93.31113675 2.77026266 106.74609375 15.64453125 C112.65644471 21.82120651 117.03652614 27.95227242 120 36 C120.35964844 36.85464844 120.71929687 37.70929688 121.08984375 38.58984375 C122.3673089 43.37622605 122.28960944 47.94362498 122.25 52.875 C122.25773438 53.83019531 122.26546875 54.78539062 122.2734375 55.76953125 C122.23535221 69.65162041 117.24522733 82.35760878 107.5625 92.375 C97.32098492 102.40541783 83.52531146 108.22899111 69.23266602 108.22659302 C68.28963623 108.21627045 67.34660645 108.20594788 66.375 108.1953125 C65.38749756 108.1924826 64.39999512 108.18965271 63.38256836 108.18673706 C60.25491785 108.1756182 57.12756272 108.15052916 54 108.125 C51.86849374 108.11495948 49.73698296 108.10583551 47.60546875 108.09765625 C42.4035465 108.07570612 37.20179436 108.04231207 32 108 C32.02094727 108.90129639 32.04189453 109.80259277 32.06347656 110.73120117 C32.13247241 114.14016351 32.1821905 117.54836278 32.21972656 120.95776367 C32.23959449 122.42110042 32.26669882 123.88436049 32.30175781 125.34741211 C32.57133119 136.90338838 32.36102693 149.55689104 23.9375 158.5 C11.73261448 170.50929441 2.813045 168 -16 168 C-16 152.16 -16 136.32 -16 120 C-10.39 120 -4.78 120 1 120 C1 130.23 1 140.46 1 151 C9.53250798 147.88943176 9.53250798 147.88943176 14 141 C14.15626576 138.52167341 14.25813198 136.06688669 14.31640625 133.5859375 C14.33718735 132.85629791 14.35796844 132.12665833 14.37937927 131.37490845 C14.44481917 129.04170237 14.50373368 126.70838279 14.5625 124.375 C14.60569053 122.79425905 14.64930499 121.21352961 14.69335938 119.6328125 C14.80129369 115.75532303 14.90040755 111.8777487 15 108 C4.77 108 -5.46 108 -16 108 C-16.09206426 100.47374669 -16.17163782 92.94946442 -16.21972656 85.4230957 C-16.23978303 82.86541099 -16.26703505 80.30777179 -16.30175781 77.75024414 C-16.35053672 74.06385025 -16.37302945 70.37806516 -16.390625 66.69140625 C-16.42159271 64.98930748 -16.42159271 64.98930748 -16.45318604 63.25282288 C-16.45601653 53.13056243 -13.75157001 46.18197253 -6.859375 38.7890625 C-0.51072152 32.68048415 5.52905325 29.77088621 14.50512695 29.70947266 C15.77697342 29.69671295 17.04881989 29.68395325 18.35920715 29.67080688 C19.73556362 29.66774862 21.11192215 29.66552118 22.48828125 29.6640625 C23.91546255 29.65762645 25.34264256 29.6508975 26.76982117 29.64389038 C29.75632787 29.63194456 32.74271915 29.62820671 35.72924805 29.62939453 C39.53542329 29.62959745 43.34084963 29.60231211 47.14684772 29.56785011 C50.0939008 29.54548968 53.04077632 29.54155978 55.9879055 29.54261398 C57.38999191 29.54027111 58.7920842 29.53152246 60.19408607 29.51594925 C70.66202231 29.41056513 79.22473586 30.44688626 87 38 C92.49323982 45.47690976 92.8189055 51.8945507 92 61 C89.99520588 68.58957775 85.7684946 72.54770485 79.3046875 76.72265625 C76.03252384 78.53621136 73.48445775 79.12457795 69.80395508 79.11352539 C68.96331009 79.11344986 68.1226651 79.11337433 67.25654602 79.11329651 C66.35333115 79.10813522 65.45011627 79.10297394 64.51953125 79.09765625 C63.59154221 79.0962413 62.66355316 79.09482635 61.70744324 79.09336853 C58.74242942 79.08776937 55.77749101 79.07521704 52.8125 79.0625 C50.80273547 79.05748489 48.79296975 79.052922 46.78320312 79.04882812 C41.85543968 79.03780021 36.92773263 79.02053617 32 79 C32 82.96 32 86.92 32 91 C38.12018523 90.9308691 44.2397038 90.84277873 50.359375 90.73754883 C52.4387265 90.7044124 54.51816552 90.67634576 56.59765625 90.65356445 C59.59673146 90.61981049 62.59501287 90.5674844 65.59375 90.51171875 C66.97548401 90.50213387 66.97548401 90.50213387 68.38513184 90.49235535 C78.13730454 90.27307315 86.77779945 86.9563044 93.91796875 80.1796875 C103.11059991 70.18343613 104.72910579 60.32901959 104.17919922 47.109375 C103.81254828 42.79348378 102.373625 39.5604375 100 36 C99.5875 35.319375 99.175 34.63875 98.75 33.9375 C92.86248149 25.10622224 84.26067576 20.08597074 74 18 C68.27871771 17.54144648 62.57298875 17.51056937 56.8359375 17.48828125 C55.1911182 17.47140729 53.54631158 17.45325346 51.90151978 17.43388367 C47.60430872 17.3866721 43.30714911 17.3566772 39.00976562 17.33044434 C34.61187588 17.30049207 30.2141629 17.25401268 25.81640625 17.20898438 C17.21101037 17.1232799 8.6056318 17.05732021 0 17 C0 11.39 0 5.78 0 0 Z " fill="#190285" transform="translate(187,153)"/>
+                <path d="M0 0 C1.84717873 -0.01441132 1.84717873 -0.01441132 3.73167419 -0.02911377 C5.0816123 -0.03396103 6.43155255 -0.03824004 7.78149414 -0.04199219 C9.16150414 -0.04774333 10.54151411 -0.05350107 11.92152405 -0.05926514 C14.81585055 -0.06977362 17.71014929 -0.07561748 20.60449219 -0.07910156 C24.3148192 -0.08459036 28.02477998 -0.10862675 31.73499203 -0.13707352 C34.5857094 -0.15568737 37.43633826 -0.16090478 40.28711128 -0.16243744 C41.65507576 -0.16546665 43.02303859 -0.17350429 44.39094353 -0.18662262 C46.3035241 -0.2036572 48.21625547 -0.19996181 50.12890625 -0.1953125 C51.76199989 -0.20078094 51.76199989 -0.20078094 53.42808533 -0.20635986 C56.12915039 0.16113281 56.12915039 0.16113281 57.98072815 1.43731689 C59.930327 4.36372272 59.78478835 7.81223694 59.12915039 11.16113281 C57.95256042 13.25994873 57.95256042 13.25994873 56.12915039 15.16113281 C53.60444641 15.64215088 53.60444641 15.64215088 50.55615234 15.61523438 C49.41519608 15.61493225 48.27423981 15.61463013 47.09870911 15.61431885 C45.86738754 15.59367371 44.63606598 15.57302856 43.36743164 15.55175781 C41.47603706 15.54326813 41.47603706 15.54326813 39.5464325 15.53460693 C36.19719771 15.51599338 32.84905322 15.48006847 29.50012207 15.43579102 C26.0816405 15.39484141 22.66304286 15.37637743 19.24438477 15.35644531 C12.53869226 15.31569361 5.83491015 15.23740686 -0.87084961 15.16113281 C-0.87084961 24.73113281 -0.87084961 34.30113281 -0.87084961 44.16113281 C-5.49084961 44.16113281 -10.11084961 44.16113281 -14.87084961 44.16113281 C-15.04499761 39.32326321 -15.1714218 34.48724935 -15.25537109 29.64697266 C-15.29039175 28.00374543 -15.33802662 26.36073347 -15.39892578 24.71826172 C-15.95555293 9.31044793 -15.95555293 9.31044793 -11.46850586 4.09863281 C-7.60230269 0.56816438 -5.2173462 0.0327447 0 0 Z " fill="#FDFDFE" transform="translate(202.870849609375,199.8388671875)"/>
+            </svg>
+            <div class="logo-text">POWER FIT GYM</div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#machines">Máquinas</a></li>
+                <li><a href="#reserve">Reservar</a></li>
+                <li><a href="#calculator">Calculadora</a></li>
+                <li><a href="#history">Historial</a></li>
+                <li><a href="#routines">Rutinas</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <section id="machines" class="card">
+            <h2 class="section-title">Máquinas Disponibles</h2>
+            <div class="machine-grid" id="machineContainer">
+                <!-- Máquinas se cargarán aquí con JavaScript -->
+            </div>
+        </section>
+        
+        <section id="reserve" class="card">
+            <h2 class="section-title">Reservar Máquina</h2>
+            <div class="reserve-form">
+                <form id="reservationForm">
+                    <div>
+                        <label for="machineSelect">Selecciona una máquina:</label>
+                        <select id="machineSelect" required>
+                            <option value="">-- Selecciona --</option>
+                            <!-- Las opciones se cargarán con JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reserveTime">Tiempo (en bloques de 30 min):</label>
+                        <select id="reserveTime" required>
+                            <option value="30">30 minutos</option>
+                            <option value="60">1 hora</option>
+                            <option value="90">1 hora y media</option>
+                            <option value="120">2 horas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="userName">Tu nombre:</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <button type="submit" class="btn btn-reserve">Reservar</button>
+                </form>
+                <div id="reservationResult" class="result" style="display: none;"></div>
+            </div>
+        </section>
+        
+        <section id="calculator" class="card">
+            <h2 class="section-title">Calculadora de Precios</h2>
+            <p>Calcula el costo de usar una máquina por tiempo determinado</p>
+            <div class="calculator">
+                <select id="calcMachine">
+                    <option value="">-- Selecciona máquina --</option>
+                    <!-- Las opciones se cargarán con JavaScript -->
+                </select>
+                <select id="calcTime">
+                    <option value="30">30 minutos</option>
+                    <option value="60">1 hora</option>
+                    <option value="90">1 hora y media</option>
+                    <option value="120">2 horas</option>
+                </select>
+                <button id="calculateBtn">Calcular</button>
+                <div id="calculationResult" class="result"></div>
+            </div>
+        </section>
+        
+        <section id="history" class="card">
+            <h2 class="section-title">Historial de Uso</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Máquina</th>
+                        <th>Usuario</th>
+                        <th>Fecha</th>
+                        <th>Tiempo</th>
+                        <th>Costo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                    <!-- Historial se cargará aquí con JavaScript -->
+                </tbody>
+            </table>
+        </section>
+        
+        <section id="routines" class="card">
+            <h2 class="section-title">Rutinas Recomendadas</h2>
+            <div class="routine-card">
+                <h4>Rutina Básica para Principiantes</h4>
+                <ul>
+                    <li>5 min de calentamiento (cinta o bicicleta)</li>
+                    <li>3 series de 12 repeticiones en Prensa de Piernas</li>
+                    <li>3 series de 10 repeticiones en Máquina de Pecho</li>
+                    <li>3 series de 12 repeticiones en Máquina de Remo</li>
+                    <li>3 series de 15 repeticiones en Abdominales</li>
+                    <li>5 min de enfriamiento (cinta o elíptica)</li>
+                </ul>
+                <p><strong>Duración estimada:</strong> 45-60 minutos</p>
+                <p><strong>Costo estimado:</strong> $15-20</p>
+            </div>
+            
+            <div class="routine-card">
+                <h4>Rutina Intermedia de Fuerza</h4>
+                <ul>
+                    <li>5-10 min de calentamiento</li>
+                    <li>4 series de 8 repeticiones en Prensa de Piernas</li>
+                    <li>4 series de 8 repeticiones en Máquina de Press Militar</li>
+                    <li>4 series de 8 repeticiones en Máquina de Dorsales</li>
+                    <li>3 series de 10 repeticiones en Máquina de Bíceps</li>
+                    <li>3 series de 10 repeticiones en Máquina de Tríceps</li>
+                    <li>5 min de enfriamiento</li>
+                </ul>
+                <p><strong>Duración estimada:</strong> 60-75 minutos</p>
+                <p><strong>Costo estimado:</strong> $20-25</p>
+            </div>
+            
+            <div class="routine-card">
+                <h4>Rutina Cardiovascular</h4>
+                <ul>
+                    <li>5 min de calentamiento suave</li>
+                    <li>20 min de intervalo en Cinta (1 min rápido, 1 min lento)</li>
+                    <li>15 min en Máquina de Remo a ritmo constante</li>
+                    <li>10 min en Elíptica con resistencia media</li>
+                    <li>5 min de enfriamiento y estiramientos</li>
+                </ul>
+                <p><strong>Duración estimada:</strong> 55-60 minutos</p>
+                <p><strong>Costo estimado:</strong> $18-22</p>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Sección del QR para GitHub Pages -->
+    <div class="qr-section">
+        <h3 class="qr-title">Escanea para acceder desde tu móvil</h3>
+        <img id="qrCode" class="qr-code" 
+             src="" 
+             alt="QR PowerFit Gym">
+        <p class="qr-description">PowerFit Gym - Gestión de Máquinas</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2023 PowerFit Gym. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+        // Base de datos de máquinas con precios por 30 minutos
+        let machines = [
+            { 
+                id: 1, 
+                name: "Cinta de Correr", 
+                pricePer30Min: 5, 
+                status: "available", 
+                description: "Perfecta para cardio y calentamiento", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 2, 
+                name: "Máquina de Press de Pecho", 
+                pricePer30Min: 7, 
+                status: "available", 
+                description: "Trabaja pectorales, hombros y tríceps", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 3, 
+                name: "Prensa de Piernas", 
+                pricePer30Min: 8, 
+                status: "available", 
+                description: "Fortalece cuádriceps, isquiotibiales y glúteos", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 4, 
+                name: "Máquina de Remo", 
+                pricePer30Min: 6, 
+                status: "available", 
+                description: "Ejercicio completo para espalda y brazos", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 5, 
+                name: "Máquina de Abdominales", 
+                pricePer30Min: 4, 
+                status: "available", 
+                description: "Enfocada en el trabajo del core", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 6, 
+                name: "Bicicleta Elíptica", 
+                pricePer30Min: 5.5, 
+                status: "available", 
+                description: "Bajo impacto para cardio completo", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 7, 
+                name: "Máquina de Dorsales", 
+                pricePer30Min: 7, 
+                status: "available", 
+                description: "Trabajo específico para espalda alta", 
+                timer: null, 
+                endTime: null 
+            },
+            { 
+                id: 8, 
+                name: "Máquina de Bíceps", 
+                pricePer30Min: 6.5, 
+                status: "available", 
+                description: "Aislamiento para bíceps", 
+                timer: null, 
+                endTime: null 
+            }
+        ];
+
+        // Cargar máquinas en la página al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMachines();
+            loadHistory();
+            generateQR(); // Generar el QR automáticamente
+            
+            // Configurar el evento para el botón de calcular
+            document.getElementById('calculateBtn').addEventListener('click', calculateCost);
+            
+            // Configurar el evento para el formulario de reserva
+            document.getElementById('reservationForm').addEventListener('submit', handleReservation);
+            
+            // Agregar eventos táctiles para móviles
+            const reserveBtn = document.getElementById('reservationForm');
+            reserveBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                handleReservation(e);
+            }, {passive: false});
+            
+            const calcBtn = document.getElementById('calculateBtn');
+            calcBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                calculateCost();
+            }, {passive: false});
+        });
+
+        // Generar QR con la URL actual
+        function generateQR() {
+            const currentUrl = window.location.href;
+            const qrSize = 180;
+            const qrColor = '190285'; // Color principal de tu marca
+            const qrBgColor = 'FEFEFE'; // Color de fondo
+            
+            document.getElementById('qrCode').src = 
+                `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&color=${qrColor}&bgcolor=${qrBgColor}&data=${encodeURIComponent(currentUrl)}`;
+        }
+
+        // Cargar máquinas en la página
+        function loadMachines() {
+            const container = document.getElementById('machineContainer');
+            const selectMachine = document.getElementById('machineSelect');
+            const calcMachine = document.getElementById('calcMachine');
+            
+            container.innerHTML = '';
+            selectMachine.innerHTML = '<option value="">-- Selecciona --</option>';
+            calcMachine.innerHTML = '<option value="">-- Selecciona máquina --</option>';
+            
+            machines.forEach(machine => {
+                // Tarjetas de máquinas
+                const machineCard = document.createElement('div');
+                machineCard.className = 'machine-card';
+                machineCard.dataset.id = machine.id;
+                
+                let timerHtml = '';
+                let releaseButton = '';
+                
+                if (machine.status === 'occupied') {
+                    const remainingTime = Math.max(0, Math.ceil((machine.endTime - Date.now()) / 1000 / 60));
+                    timerHtml = `<div class="timer">Tiempo restante: ${remainingTime} min</div>`;
+                    releaseButton = `<button class="btn btn-release" onclick="releaseMachine(${machine.id})" ontouchstart="releaseMachine(${machine.id})">Liberar ahora</button>`;
+                }
+                
+                machineCard.innerHTML = `
+                    <h3>${machine.name}</h3>
+                    <p>${machine.description}</p>
+                    <p class="price">Precio: $${machine.pricePer30Min.toFixed(2)}/30min</p>
+                    <span class="status ${machine.status}">${machine.status === 'available' ? 'Disponible' : 'Ocupada'}</span>
+                    ${timerHtml}
+                    ${releaseButton}
+                `;
+                container.appendChild(machineCard);
+                
+                // Opciones para select de reserva
+                const option = document.createElement('option');
+                option.value = machine.id;
+                option.textContent = `${machine.name} (${machine.status === 'available' ? 'Disponible' : 'Ocupada'})`;
+                selectMachine.appendChild(option);
+                
+                // Opciones para select de calculadora
+                const calcOption = document.createElement('option');
+                calcOption.value = machine.id;
+                calcOption.textContent = machine.name;
+                calcMachine.appendChild(calcOption);
+            });
+        }
+        
+        // Cargar historial desde localStorage
+        function loadHistory() {
+            const historyTable = document.getElementById('historyTable');
+            let history = JSON.parse(localStorage.getItem('gymMachineHistory')) || [];
+            
+            historyTable.innerHTML = '';
+            
+            if (history.length === 0) {
+                historyTable.innerHTML = '<tr><td colspan="6" style="text-align: center;">No hay historial registrado</td></tr>';
+                return;
+            }
+            
+            // Ordenar por fecha más reciente
+            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            history.forEach(record => {
+                const row = document.createElement('tr');
+                const machine = machines.find(m => m.id === record.machineId);
+                const pricePer30Min = machine ? machine.pricePer30Min : 0;
+                const total = (record.minutes / 30) * pricePer30Min;
+                
+                const isActive = machines.find(m => m.id === record.machineId)?.status === 'occupied' && 
+                                machines.find(m => m.id === record.machineId)?.endTime > Date.now();
+                
+                row.innerHTML = `
+                    <td>${getMachineName(record.machineId)}</td>
+                    <td>${record.userName}</td>
+                    <td>${new Date(record.date).toLocaleString()}</td>
+                    <td>${record.minutes} min</td>
+                    <td>$${total.toFixed(2)}</td>
+                    <td>${isActive ? 'En uso' : 'Completado'}</td>
+                `;
+                historyTable.appendChild(row);
+            });
+        }
+        
+        // Helper para obtener nombre de máquina por ID
+        function getMachineName(id) {
+            const machine = machines.find(m => m.id == id);
+            return machine ? machine.name : 'Máquina desconocida';
+        }
+        
+        // Helper para obtener precio de máquina por ID
+        function getMachinePricePer30Min(id) {
+            const machine = machines.find(m => m.id == id);
+            return machine ? machine.pricePer30Min : 0;
+        }
+        
+        // Mostrar notificación
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Liberar máquina manualmente
+        function releaseMachine(machineId) {
+            const machine = machines.find(m => m.id == machineId);
+            
+            if (machine && machine.status === 'occupied') {
+                // Limpiar temporizador si existe
+                if (machine.timer) {
+                    clearTimeout(machine.timer);
+                    machine.timer = null;
+                }
+                
+                // Actualizar estado
+                machine.status = 'available';
+                machine.endTime = null;
+                
+                // Recargar vista
+                loadMachines();
+                loadHistory();
+                
+                // Mostrar notificación
+                showNotification(`Máquina ${machine.name} liberada`);
+            }
+        }
+        
+        // Programar liberación automática de máquina
+        function scheduleMachineRelease(machineId, minutes) {
+            const machine = machines.find(m => m.id == machineId);
+            
+            if (!machine) return;
+            
+            // Limpiar temporizador anterior si existe
+            if (machine.timer) {
+                clearTimeout(machine.timer);
+            }
+            
+            // Calcular tiempo de finalización
+            const endTime = Date.now() + minutes * 60 * 1000;
+            machine.endTime = endTime;
+            machine.status = 'occupied';
+            
+            // Configurar temporizador
+            machine.timer = setTimeout(() => {
+                machine.status = 'available';
+                machine.endTime = null;
+                loadMachines();
+                loadHistory();
+                showNotification(`Máquina ${machine.name} disponible nuevamente`);
+            }, minutes * 60 * 1000);
+            
+            // Actualizar visualización cada minuto
+            const updateInterval = setInterval(() => {
+                if (machine.status === 'available') {
+                    clearInterval(updateInterval);
+                    return;
+                }
+                
+                const remainingTime = Math.max(0, Math.ceil((endTime - Date.now()) / 1000 / 60));
+                const timerElement = document.querySelector(`.machine-card[data-id="${machineId}"] .timer`);
+                
+                if (timerElement) {
+                    timerElement.textContent = `Tiempo restante: ${remainingTime} min`;
+                }
+                
+                if (remainingTime <= 0) {
+                    clearInterval(updateInterval);
+                }
+            }, 60000); // Actualizar cada minuto
+        }
+        
+        // Manejar reserva de máquina
+        function handleReservation(e) {
+            e.preventDefault();
+            
+            const machineId = document.getElementById('machineSelect').value;
+            const minutes = parseInt(document.getElementById('reserveTime').value);
+            const userName = document.getElementById('userName').value;
+            
+            if (!machineId || !minutes || !userName) {
+                showNotification('Por favor completa todos los campos');
+                return;
+            }
+            
+            const machine = machines.find(m => m.id == machineId);
+            
+            if (machine.status !== 'available') {
+                showNotification('Esta máquina no está disponible actualmente');
+                return;
+            }
+            
+            // Programar liberación automática
+            scheduleMachineRelease(machineId, minutes);
+            
+            // Registrar en historial
+            const history = JSON.parse(localStorage.getItem('gymMachineHistory')) || [];
+            history.push({
+                machineId: parseInt(machineId),
+                userName,
+                minutes: minutes,
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('gymMachineHistory', JSON.stringify(history));
+            
+            // Mostrar resultado
+            const total = (minutes / 30) * machine.pricePer30Min;
+            const resultDiv = document.getElementById('reservationResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <p>Reserva exitosa!</p>
+                <p>Máquina: ${machine.name}</p>
+                <p>Tiempo: ${minutes} minutos</p>
+                <p>Costo total: $${total.toFixed(2)}</p>
+            `;
+            
+            // Recargar vistas
+            loadMachines();
+            loadHistory();
+            
+            // Resetear formulario
+            document.getElementById('reservationForm').reset();
+            
+            // Mostrar notificación
+            showNotification(`Máquina ${machine.name} reservada por ${minutes} minutos`);
+        }
+        
+        // Calcular costo de uso
+        function calculateCost() {
+            const machineId = document.getElementById('calcMachine').value;
+            const minutes = parseInt(document.getElementById('calcTime').value);
+            
+            if (!machineId) {
+                showNotification('Por favor selecciona una máquina');
+                return;
+            }
+            
+            const machine = machines.find(m => m.id == machineId);
+            const total = (minutes / 30) * machine.pricePer30Min;
+            
+            document.getElementById('calculationResult').innerHTML = `
+                <p>Máquina: ${machine.name}</p>
+                <p>Tiempo: ${minutes} minutos</p>
+                <p>Precio por 30 minutos: $${machine.pricePer30Min.toFixed(2)}</p>
+                <p>Costo total: $${total.toFixed(2)}</p>
+            `;
+        }
+        
+        // Hacer las funciones accesibles desde el HTML
+        window.releaseMachine = releaseMachine;
+    </script>
+</body>
+</html>
